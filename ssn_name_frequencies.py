@@ -7,25 +7,15 @@ def parse_table(returned_table):
     ''''''
     pass
 
-def is_year_valid(returned_html):
-    ''''''
-    return True
-
-def get_response_from_ssa(year, name_gender_is_male, count_returned=1000):
-    ''''''
-
-    # Check parameters
-    check_parameters(
-            year=year,
-            name_gender_is_male=name_gender_is_male,
-            count_returned=count_returned
-            )
-
-    parameters = 
-    response = post()
+def raise_error_if_no_table_exists(returned_html):
+    '''Raise an error if no table is returned by the SSA site'''
+    return None
 
 def check_parameters(year, name_gender_is_male, count_returned):
-    '''Check whether the passed parameters are valid'''
+    '''
+    Check whether the passed parameters are valid, returning errors if
+    inappropriate values exist
+    '''
 
     # Check year, which must be between 1880 and last year
     LOWEST_YEAR_ALLOWED = 1880
@@ -47,3 +37,39 @@ def check_parameters(year, name_gender_is_male, count_returned):
             count_returned > HIGHEST_COUNT_ALLOWED:
         raise ValueError("count_returned must be a positive integer between {0} and {1}".format(
                 (LOWEST_COUNT_ALLOWED, HIGHEST_COUNT_ALLOWED)))
+
+def get_response_from_ssa(year, count_returned, frequency_or_percentage):
+    '''
+    Retrieve the HTML response from the Social Security website, which
+    will include the table with name frequencies, or any errors
+    '''
+
+    SSA_URL = "http://www.ssa.gov/cgi-bin/popularnames.cgi"
+
+    # Gather the information from the SSA website
+    parameters = {
+            "year": year,
+            "top": count_returned,
+            "number": frequency_or_percentage
+            }
+    response = post(SSA_URL, params=parameters)
+
+    # Make sure that the response was successful
+    if response.status_code is not 200:
+        response.raise_for_status()
+
+    # Return the responded HTML text
+    return response.text
+
+
+def main(year, name_gender_is_male, count_returned=1000):
+    ''''''
+
+    # Check parameters, throwing an error if they are invalid
+    check_parameters(
+            year=year,
+            name_gender_is_male=name_gender_is_male,
+            count_returned=count_returned
+            )
+
+
