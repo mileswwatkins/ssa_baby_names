@@ -1,5 +1,6 @@
 from datetime.date import today
 
+from xml.etree import cElementTree as ET
 from requests import post
 
 
@@ -59,11 +60,23 @@ def get_response_from_ssa(year, percentage_instead_of_frequency):
     # Return the responded HTML text
     return response.text
 
-def parse_table(returned_text):
+def parse_table(returned_html):
     '''Extract the table data from the provided HTML'''
     
-    pass
+    # Extract the names table from the full HTML page
+    
 
+    # Parse the table into memory
+    table_parser = ET.XML(table_html)
+    table = []
+
+    rows = iter(table_parser)
+    column_names = [header.text for header in next(rows)]
+    for row in rows:
+        values = [value.text for value in row]
+        table.append(dict(zip(column_names, values)))
+
+    return table
 
 def main(year, name_gender_is_male, count_returned=1000):
     '''
@@ -90,11 +103,29 @@ def main(year, name_gender_is_male, count_returned=1000):
             ))
 
     # Keep only the desired gender of names
+    if name_gender_is_male:
+        frequencies = frequencies["male"]
+        percentages = percentages["male"]
+    else:
+        frequencies = frequencies["female"]
+        percentages = percentages["female"]
 
     # Merge the frequencies and the percentages together
+    # In the process, subset to the desired number of names
+    names = []
+    for name_index in range(count_returned):
+        name = {}
 
-    # Subset to the desired number of names
-    names = names[0:(count_returned - 1)]
+        name["rank"] = name_index + 1
+        name["name"] = frequencies[name_index]["name"]
+        name["frequency"] = frequencies[name_index]["value"]
+        name["percentage"] = percentages[name_index]["value"]
+
+        # Make sure that the ranks correspond to the same names in both tables
+        if frequencies[name_index]["name"] is not percentages[name_index]["name"]:
+            name["percentage"] = None
+
+        names.append(name)
 
     # Return the parsed and subset data
     return names
