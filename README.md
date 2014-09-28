@@ -1,5 +1,5 @@
-SSA Names
-=========
+SSA Baby Names
+==============
 
 About
 -----
@@ -17,7 +17,7 @@ Usage
 -----
 What was the most popular name for boys in 1985?
 
-```python
+```
 >>> from ssa_names import get_top_names
 >>> top_names = get_top_names(year=1985, name_gender_is_male=True)
 >>> top_names[0]
@@ -27,7 +27,7 @@ What was the most popular name for boys in 1985?
 
 How popular was my name in that year?
 
-```python
+```
 >>> [name_info for name_info in top_names if name_info["name"] == "Miles"]
 [{'percentage': 0.0238, 'frequency': 457, 'name': 'Miles', 'rank': 396}]
 ```
