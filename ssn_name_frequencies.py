@@ -53,7 +53,7 @@ def get_response_from_ssa(year, percentage_instead_of_frequency):
             "top": HIGHEST_NAME_COUNT_ALLOWED,
             "number": number_parameter
             }
-    response = requests.post(SSA_URL, params=parameters)
+    response = requests.post(SSA_URL, data=parameters)
 
     # Make sure that the response was successful
     if response.status_code is not 200:
@@ -64,7 +64,13 @@ def get_response_from_ssa(year, percentage_instead_of_frequency):
 
 
 def parse_table(returned_html):
-    '''Extract the table data from the provided HTML'''
+    '''
+    Extract the table data from the provided HTML.
+
+    According to the HTML <meta> information, the response's structure
+    has been consistent since 2006, so this function should not need
+    regular changes.
+    '''
     
     # Extract the names table from the full HTML page
     # There are multiple <table>s,
