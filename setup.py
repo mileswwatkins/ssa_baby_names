@@ -9,5 +9,5 @@ setup(
         url="https://github.com/mileswwatkins/ssa_baby_names",
         download_url="https://github.com/mileswwatkins/ssa_baby_names/tarball/1.1",
         keywords=["Social Security Administaration", "SSA", "baby names", "popular names", "names"],
-
+        classifiers=[],
         )
