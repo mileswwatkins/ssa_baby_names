@@ -9,12 +9,17 @@ Provides access to the most popular names of both genders in any year of America
 
 The top 1,000 names are available for a given gender and year; these encompass roughly 90% of all births. The earliest year in the database is 1880.
 
+Installation
+------------
+`pip install ssa_names`, or clone this Github repository.
+
 Usage
 -----
-What was the most popular name in 1985?
+What was the most popular name for boys in 1985?
 
 ```python
 >>> from ssa_names import get_top_names
+>>> top_names = get_top_names(year=1985, name_gender_is_male=True)
 >>> top_names[0]
 {'percentage': 3.3742, 'frequency': 64883, 'name': 'Michael', 'rank': 1}
 ```
