@@ -1,8 +1,8 @@
-from datetime.date import today
+import datetime
 import re
 
 from xml.etree import cElementTree as ET
-from requests import post
+import requests
 
 
 def check_parameters(year, name_gender_is_male, count_returned):
@@ -13,7 +13,7 @@ def check_parameters(year, name_gender_is_male, count_returned):
 
     # Check year, which must be between 1880 and last year
     LOWEST_YEAR_ALLOWED = 1880
-    highest_year_allowed = today().year - 1
+    highest_year_allowed = datetime.date.today().year - 1
     if not LOWEST_YEAR_ALLOWED <= year <= highest_year_allowed:
         raise ValueError("Data do not exist for the given year")
     if type(year) is not int:
@@ -31,6 +31,7 @@ def check_parameters(year, name_gender_is_male, count_returned):
             count_returned > HIGHEST_COUNT_ALLOWED:
         raise ValueError("count_returned must be an integer between {0} and {1}".format(
                 (LOWEST_COUNT_ALLOWED, HIGHEST_COUNT_ALLOWED)))
+
 
 def get_response_from_ssa(year, percentage_instead_of_frequency):
     '''
@@ -52,7 +53,7 @@ def get_response_from_ssa(year, percentage_instead_of_frequency):
             "top": HIGHEST_NAME_COUNT_ALLOWED,
             "number": number_parameter
             }
-    response = post(SSA_URL, params=parameters)
+    response = requests.post(SSA_URL, params=parameters)
 
     # Make sure that the response was successful
     if response.status_code is not 200:
@@ -61,14 +62,35 @@ def get_response_from_ssa(year, percentage_instead_of_frequency):
     # Return the responded HTML text
     return response.text
 
+
 def parse_table(returned_html):
     '''Extract the table data from the provided HTML'''
     
     # Extract the names table from the full HTML page
     # There are multiple <table>s,
     # use the one with <... summary="Popularity for top [number]...">
-    name_table_search = r'''.+(<table.*?summary="Popularity for top \d{1,4}.+?<\/table>).+'''
-    table_html = re.findall(name_table_search, returned_html, re.DOTALL)[0]
+    NAME_TABLE_SEARCH = r'''
+            Background\ information.*? # Use the first table after the title
+            (
+            <table.*?</table> # Find the main body of the table
+            </p>\s</td></tr></table> # Also capture the hanging tags to fix
+            )
+            '''
+    table_html_needing_fix = re.findall(
+            NAME_TABLE_SEARCH,
+            returned_html,
+            re.DOTALL | re.VERBOSE
+            )[0]
+
+    # The table also has improper HTML tagging in the footer, requiring fixes
+    NAME_TABLE_FIX = r'''(<tr.*)<tr><td colspan="'''
+    table_html = "<table>" + \
+            re.findall(
+            NAME_TABLE_FIX,
+            table_html_needing_fix,
+            re.DOTALL
+            )[0] + \
+            "</table>"
 
     # Parse the table into memory
     table_parser = ET.XML(table_html)
@@ -83,8 +105,10 @@ def parse_table(returned_html):
             "Number of females"
             ]
     column_names = [header.text for header in next(rows)]
+    print("\n" + table_html + "\n")
+    print(column_names)
     if column_names is not EXPECTED_COLUMN_NAMES:
-        raise Error("SSA's Web API has changed, please check for a package update")
+        raise Error("SSA's Web API has changed, please try to update package")
 
     # Finish parsing the table rows
     male_table = []
@@ -108,6 +132,7 @@ def parse_table(returned_html):
 
     table = {"male": male_data, "female": female_data}
     return table
+
 
 def main(year, name_gender_is_male, count_returned=1000):
     '''
@@ -160,3 +185,8 @@ def main(year, name_gender_is_male, count_returned=1000):
 
     # Return the parsed and subset data
     return names
+
+
+# Test functionality
+if __name__ == "__main__":
+    print(main(year=1975, name_gender_is_male=True, count_returned=5))
