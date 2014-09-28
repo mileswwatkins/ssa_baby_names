@@ -3,9 +3,9 @@ SSA Baby Names
 
 About
 -----
-Python wrapper for the Social Security Administration's [Popular Baby Names service](http://www.ssa.gov/OACT/babynames/).
+A Python wrapper for the Social Security Administration's [Popular Baby Names service](http://www.ssa.gov/OACT/babynames/).
 
-Provides access to the most popular names of both genders in any year of American history. Both the frequency of names and their relative frequencies (ie, percentage of all births of their gender) are available.
+Provides access to the most popular names of both genders in a year of American history. Both the frequency of names and their relative frequencies (ie, percentage of all births of their gender) are available.
 
 The top 1,000 names are available for a given gender and year; these encompass roughly 90% of all births. The earliest year in the database is 1880.
 
