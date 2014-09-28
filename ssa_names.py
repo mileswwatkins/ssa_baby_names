@@ -156,11 +156,11 @@ def parse_table(returned_html):
     return table
 
 
-def main(year, name_gender_is_male, count_returned=1000):
+def get_top_names(year, name_gender_is_male, count_returned=1000):
     '''
     The main function of this package, which returns a list of the top
     names of a given gender for a given year, and their frequencies
-    and relative frequencies (ie, percentages of overall population)
+    and relative frequencies (ie, percentages of all births)
     '''
 
     # Check user-provided parameters, throwing an error if they are invalid
@@ -194,6 +194,7 @@ def main(year, name_gender_is_male, count_returned=1000):
     for name_index in range(count_returned):
         name = {}
 
+        name["rank"] = name_index + 1
         name["name"] = frequencies[name_index]["name"]
         name["frequency"] = frequencies[name_index]["value"]
         name["percentage"] = percentages[name_index]["value"]
