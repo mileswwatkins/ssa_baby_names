@@ -103,40 +103,56 @@ def parse_table(returned_html):
     rows = iter(table_parser)
 
     # Confirm that the column names are as expected
-    EXPECTED_COLUMN_NAMES = [
+    EXPECTED_COLUMN_NAMES_FREQUENCY = [
             "Rank",
             "Male name",
-            "Number of males",
+            "Number of",
             "Female name",
-            "Number of females"
+            "Number of"
+            ]
+    EXPECTED_COLUMN_NAMES_PERCENTAGE = [
+            "Rank",
+            "Male name",
+            "Percent of",
+            "Female name",
+            "Percent of"
             ]
     column_names = [header.text for header in next(rows)]
-    print("\n" + table_html + "\n")
-    print(column_names)
-    if column_names is not EXPECTED_COLUMN_NAMES:
-        raise Error("SSA's Web API has changed, please try to update package")
+    if column_names == EXPECTED_COLUMN_NAMES_FREQUENCY:
+        table_type = "frequency"
+    elif column_names == EXPECTED_COLUMN_NAMES_PERCENTAGE:
+        table_type = "percentage"
+    else:
+        raise SyntaxError("The SSA's HTML response has changed, please try to update this package")
 
     # Finish parsing the table rows
     male_table = []
     female_table = []
     for row in rows:
-        values = [value.text for value in row]
-        values_labeled = dict(zip(COLUMN_NAMES_TO_USE, values))
+        cell_values = [value.text for value in row]
+
+        # Destring the value fields
+        if table_type == "frequency":
+            male_value = int(cell_values[2].replace(",", ""))
+            female_value = int(cell_values[4].replace(",", ""))
+        elif table_type == "percentage":
+            male_value = float(cell_values[2].replace("%", ""))
+            female_value = float(cell_values[4].replace("%", ""))
 
         # Restructure the columns so that male and female data are separated
         male_data = {
-                "name": values_labeled["Male name"],
-                "value": values_labled["Number of males"]
+                "name": cell_values[1],
+                "value": male_value
                 }
         male_table.append(male_data)
 
         female_data = {
-                "name": values_labeled["Female name"],
-                "value": values_labled["Number of females"]
+                "name": cell_values[3],
+                "value": female_value
                 }
         female_table.append(female_data)
 
-    table = {"male": male_data, "female": female_data}
+    table = {"male": male_table, "female": female_table}
     return table
 
 
@@ -161,7 +177,7 @@ def main(year, name_gender_is_male, count_returned=1000):
             ))
     percentages = parse_table(get_response_from_ssa(
             year=year,
-            percentage_instead_of_frequency=False
+            percentage_instead_of_frequency=True
             ))
 
     # Keep only the desired gender of names
@@ -178,21 +194,15 @@ def main(year, name_gender_is_male, count_returned=1000):
     for name_index in range(count_returned):
         name = {}
 
-        name["rank"] = name_index + 1
         name["name"] = frequencies[name_index]["name"]
         name["frequency"] = frequencies[name_index]["value"]
         name["percentage"] = percentages[name_index]["value"]
 
         # Make sure that the ranks correspond to the same names in both tables
-        if frequencies[name_index]["name"] is not percentages[name_index]["name"]:
-            name["percentage"] = None
+        if frequencies[name_index]["name"] != percentages[name_index]["name"]:
+            AssertionError("The frequency and percengage tables are in different orders")
 
         names.append(name)
 
     # Return the parsed and subset data
     return names
-
-
-# Test functionality
-if __name__ == "__main__":
-    print(main(year=1975, name_gender_is_male=True, count_returned=5))
