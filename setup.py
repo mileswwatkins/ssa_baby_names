@@ -1,7 +1,13 @@
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+
 setup(
         name="ssa_baby_names",
-        version="1.3",
+        version="1.4",
+        
+        packages=["ssa_baby_names"],
         install_requires=["requests"],
 
         description="Python wrapper for the Social Security Administration's Popular Baby Names service",
@@ -9,7 +15,6 @@ setup(
         author_email="miles.w.watkins@gmail.com",
 
         url="https://github.com/mileswwatkins/ssa_baby_names",
-        download_url="https://github.com/mileswwatkins/ssa_baby_names/tarball/1.3",
-        keywords=["Social Security Administaration", "SSA", "baby names", "popular names", "names"],
-        classifiers=[],
+        download_url="https://github.com/mileswwatkins/ssa_baby_names/tarball/1.4",
+        keywords=["Social Security Administaration", "SSA", "baby names", "popular names", "names"]
         )
