@@ -11,16 +11,16 @@ The top 1,000 names are available for a given gender and year; these encompass r
 
 Installation
 ------------
-`pip install ssa_names`, or clone this Github repository.
+`pip install ssa_baby_names`, or clone this Github repository.
 
 Usage
 -----
 What was the most popular name for boys in 1985?
 
 ```
->>> from ssa_names import get_top_names
->>> top_names = get_top_names(year=1985, name_gender_is_male=True)
->>> top_names[0]
+>>> from ssa_baby_names import get_top_names
+>>> top_male_names_in_1985 = get_top_names(year=1985, name_gender_is_male=True)
+>>> top_male_names_in_1985[0]
 {'percentage': 3.3742, 'frequency': 64883, 'name': 'Michael', 'rank': 1}
 ```
 
@@ -28,6 +28,6 @@ What was the most popular name for boys in 1985?
 How popular was my name in that year?
 
 ```
->>> [name_info for name_info in top_names if name_info["name"] == "Miles"]
+>>> [name_info for name_info in top_male_names_in_1985 if name_info["name"] == "Miles"]
 [{'percentage': 0.0238, 'frequency': 457, 'name': 'Miles', 'rank': 396}]
 ```
