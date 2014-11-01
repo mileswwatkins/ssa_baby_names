@@ -5,7 +5,7 @@ except ImportError:
 
 setup(
         name="ssa_baby_names",
-        version="2.0",
+        version="2.1",
         
         py_modules=["ssa_baby_names"],
         install_requires=["requests"],
@@ -15,6 +15,6 @@ setup(
         author_email="miles.w.watkins@gmail.com",
 
         url="https://github.com/mileswwatkins/ssa_baby_names",
-        download_url="https://github.com/mileswwatkins/ssa_baby_names/tarball/2.0",
+        download_url="https://github.com/mileswwatkins/ssa_baby_names/tarball/2.1",
         keywords=["Social Security Administaration", "SSA", "baby names", "popular names", "names"]
         )

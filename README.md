@@ -19,15 +19,22 @@ What was the most popular name for boys in 1985?
 
 ```
 >>> from ssa_baby_names import get_top_names
->>> top_male_names_in_1985 = get_top_names(year=1985, name_gender_is_male=True)
->>> top_male_names_in_1985[0]
-{'percentage': 3.3742, 'frequency': 64883, 'name': 'Michael', 'rank': 1}
+>>> names = get_top_names(year=1985, name_gender_is_male=True)
+>>> print(names.top().name)
+Michael
 ```
 
 
 How popular was my name in that year?
 
 ```
->>> [name_info for name_info in top_male_names_in_1985 if name_info["name"] == "Miles"]
-[{'percentage': 0.0238, 'frequency': 457, 'name': 'Miles', 'rank': 396}]
+>>> my_name = names.lookup("Miles")
+>>> print(my_name)
+<BabyName for "Miles">
+>>> print(my_name.rank)
+396
+>>> print(my_name.frequency)
+497
+>>> print(my_name.percentage)
+0.0238
 ```
