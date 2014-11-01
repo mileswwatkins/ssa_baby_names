@@ -3,9 +3,13 @@ import re
 from xml.etree import cElementTree as ET
 
 import requests
+        
+
+# Set package constants
+HIGHEST_NAME_COUNT_ALLOWED = 1000
 
 
-def check_parameters(year, name_gender_is_male, count_returned):
+def check_parameters(year, name_gender_is_male):
     '''
     Check whether the passed parameters are valid, returning errors if
     inappropriate values exist
@@ -23,15 +27,6 @@ def check_parameters(year, name_gender_is_male, count_returned):
     if type(name_gender_is_male) is not bool:
         raise TypeError("name_gender_is_male must be True (returns male names) or False (female)")
 
-    # Check that count_returned is an integer between 1 and 1000
-    LOWEST_COUNT_ALLOWED = 1
-    HIGHEST_COUNT_ALLOWED = 1000
-    if type(count_returned) is not int or \
-            count_returned < LOWEST_COUNT_ALLOWED or \
-            count_returned > HIGHEST_COUNT_ALLOWED:
-        raise ValueError("count_returned must be an integer between {0} and {1}".format(
-                (LOWEST_COUNT_ALLOWED, HIGHEST_COUNT_ALLOWED)))
-
 
 def get_response_from_ssa(year, percentage_instead_of_frequency):
     '''
@@ -40,7 +35,6 @@ def get_response_from_ssa(year, percentage_instead_of_frequency):
     '''
 
     SSA_URL = "http://www.ssa.gov/cgi-bin/popularnames.cgi"
-    HIGHEST_NAME_COUNT_ALLOWED = 1000
 
     # Gather the information from the SSA website
     if percentage_instead_of_frequency:
@@ -156,7 +150,55 @@ def parse_table(returned_html):
     return table
 
 
-def get_top_names(year, name_gender_is_male, count_returned=1000):
+class YearOfBabyNames(list):
+    '''Container for all <BabyName>s in a given year'''
+
+    def __init__(self, year, name_gender_is_male):
+        self.year = year
+        self.name_gender_is_male = name_gender_is_male
+
+    def __repr__(self):
+        if self.name_gender_is_male:
+            gender = "males"
+        else:
+            gender = "females"
+
+        return "<YearOfBabyNames for {0} in the year {1}>".format(
+                gender, self.year
+                )
+
+    def lookup(self, name_to_lookup):
+        '''Find a given <BabyName> within the year, by name'''
+        for baby_name in self:
+            if baby_name.name.lower() == name_to_lookup.lower():
+                return baby_name
+
+        # If the given name isn't found, then this error will be thrown
+        raise KeyError(""""{0}" is not in the top {1} names for the year {2}""".format(
+                name_to_lookup, HIGHEST_NAME_COUNT_ALLOWED, self.year
+                ))
+
+    def top(self):
+        '''Return the most popular <BabyName> for the year'''
+        for baby_name in self:
+            if baby_name.rank == 1:
+                return baby_name
+
+
+class BabyName(object):
+    '''Information about a particular given name in a particular year'''
+
+    def __init__(self, name, rank, frequency, percentage):
+        self.name = name
+        self.rank = rank
+        self.frequency = frequency
+        self.percentage = percentage
+
+    def __repr__(self):
+        return """<BabyName for "{}">""".format(self.name)
+
+
+def get_top_names(year, name_gender_is_male):
     '''
     The main function of this package, which returns a list of the top
     names of a given gender for a given year, and their frequencies
@@ -166,8 +208,7 @@ def get_top_names(year, name_gender_is_male, count_returned=1000):
     # Check user-provided parameters, throwing an error if they are invalid
     check_parameters(
             year=year,
-            name_gender_is_male=name_gender_is_male,
-            count_returned=count_returned
+            name_gender_is_male=name_gender_is_male
             )
 
     # Get the data from the SSA website
@@ -189,21 +230,24 @@ def get_top_names(year, name_gender_is_male, count_returned=1000):
         percentages = percentages["female"]
 
     # Merge the frequencies and the percentages together
-    # In the process, subset to the desired number of names
-    names = []
-    for name_index in range(count_returned):
-        name = {}
+    names = YearOfBabyNames(
+            year=year,
+            name_gender_is_male=name_gender_is_male
+            )
+    for name_index in range(HIGHEST_NAME_COUNT_ALLOWED):
 
-        name["rank"] = name_index + 1
-        name["name"] = frequencies[name_index]["name"]
-        name["frequency"] = frequencies[name_index]["value"]
-        name["percentage"] = percentages[name_index]["value"]
-
-        # Make sure that the ranks correspond to the same names in both tables
+        # Make sure that both tables have the names in the same order
         if frequencies[name_index]["name"] != percentages[name_index]["name"]:
-            AssertionError("The frequency and percengage tables are in different orders")
+            AssertionError("The baby names are in a different order in the two SSA tables")
+
+        name = BabyName(
+                name=frequencies[name_index]["name"],
+                rank=name_index + 1,
+                frequency=frequencies[name_index]["value"],
+                percentage=percentages[name_index]["value"]
+                )
 
         names.append(name)
 
-    # Return the parsed and subset data
+    # Return the parsed and subset data, in neat object form
     return names
